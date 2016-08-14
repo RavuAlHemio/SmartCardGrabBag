@@ -111,7 +111,12 @@ namespace ZulassungsSharp
                         return;
                     }
 
-                    var sections = new ushort[] { 0xD001, 0xE001, 0xC001, 0xD011, 0xE011, 0xC011 };
+                    var sections = new ushort[]
+                    {
+                        0xD001, 0xE001, 0xC001,
+                        0xD011, 0xE011, 0xC011,
+                        0xD021, 0xE021, 0xC021
+                    };
                     foreach (ushort section in sections)
                     {
                         using (var o = new FileStream($"{section:X4}.bin", FileMode.Create, FileAccess.Write,
@@ -127,9 +132,9 @@ namespace ZulassungsSharp
 
         static void Main(string[] args)
         {
-            //ReadFromSmartCard();
+            ReadFromSmartCard();
 
-            var sections = new ushort[] {0x001, 0x011};
+            var sections = new ushort[] {0x001, 0x011, 0x021};
             foreach (ushort section in sections)
             {
                 ushort certificateSection = (ushort)(section | 0xC000);
