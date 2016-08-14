@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto.Digests;
@@ -132,9 +134,18 @@ namespace ZulassungsSharp
 
         static void Main(string[] args)
         {
-            ReadFromSmartCard();
+            if (args.Length > 0 && args[0] == "-r")
+            {
+                ReadFromSmartCard();
+            }
 
-            var sections = new ushort[] {0x001, 0x011, 0x021};
+            var languageData = new Dictionary<string, string>();
+            using (var langReader = new StreamReader(Path.Combine("Language", "en.json"), Encoding.UTF8))
+            {
+                JsonSerializer.Create().Populate(langReader, languageData);
+            }
+
+            var sections = new ushort[] { 0x001, 0x011, 0x021 };
             foreach (ushort section in sections)
             {
                 ushort certificateSection = (ushort)(section | 0xC000);
@@ -192,20 +203,39 @@ namespace ZulassungsSharp
 
                 foreach (var dataBlock in dataBlocks)
                 {
-                    OutputBlock(dataBlock);
+                    OutputBlock(dataBlock, languageData);
                 }
             }
         }
 
-        static void OutputBlock(BerTlvBlock block, int depth = 0)
+        static void OutputBlock(BerTlvBlock block, IDictionary<string, string> languageData, ImmutableList<string> precedingPath = null)
         {
-            var indent = new string(' ', 2*depth);
+            if (precedingPath == null)
+            {
+                precedingPath = ImmutableList<string>.Empty;
+            }
+
+            var thisPath = precedingPath.Add(block.TagDescription);
+            string tagKey = string.Join(".", thisPath);
+            string tagDescription;
+            if (!languageData.TryGetValue(tagKey, out tagDescription))
+            {
+                tagDescription = block.TagDescription;
+            }
+
+            if (tagDescription == null)
+            {
+                // skip this subtree
+                return;
+            }
+
+            var indent = new string(' ', 2*precedingPath.Count);
             if (block.Constructed)
             {
-                Console.WriteLine($"{indent}{block.TagNumber}:");
+                Console.WriteLine($"{indent}{tagDescription}:");
                 foreach (var subBlock in block.SubBlocks)
                 {
-                    OutputBlock(subBlock, depth + 1);
+                    OutputBlock(subBlock, languageData, thisPath);
                 }
             }
             else
@@ -213,7 +243,7 @@ namespace ZulassungsSharp
                 var bytes = block.RawBytes.ToArray();
                 var encoding = Encoding.GetEncoding("windows-1252");
                 var text = encoding.GetString(bytes);
-                Console.WriteLine($"{indent}{block.TagNumber}: {text}");
+                Console.WriteLine($"{indent}{tagDescription}: {text}");
             }
         }
     }

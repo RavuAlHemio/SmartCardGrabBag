@@ -7,7 +7,7 @@ using System.IO;
 
 namespace ZulassungsSharp
 {
-    class BerTlvBlock
+    public class BerTlvBlock
     {
         public enum TagClass : byte
         {
@@ -20,6 +20,9 @@ namespace ZulassungsSharp
         public TagClass Class { get; protected set; }
         public bool Constructed { get; protected set; }
         public long TagNumber { get; protected set; }
+
+        public string TagDescription =>
+            $"{Class.ToString()[0]}{(Constructed ? "C" : "S")}{TagNumber}";
 
         public ImmutableArray<byte> RawBytes { get; protected set; }
         public ImmutableArray<BerTlvBlock> SubBlocks { get; protected set; }
