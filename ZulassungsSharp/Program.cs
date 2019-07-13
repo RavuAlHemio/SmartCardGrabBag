@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Text;
+using SmartCardGrabBag;
 using Newtonsoft.Json;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;

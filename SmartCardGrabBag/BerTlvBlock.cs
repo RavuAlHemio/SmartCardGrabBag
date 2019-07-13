@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.IO;
 
-namespace ZulassungsSharp
+namespace SmartCardGrabBag
 {
     public class BerTlvBlock
     {
@@ -29,6 +29,24 @@ namespace ZulassungsSharp
 
         protected BerTlvBlock()
         {
+        }
+
+        public BerTlvBlock(TagClass tagClass, long tagNumber, IEnumerable<byte> rawBytes)
+        {
+            Class = tagClass;
+            Constructed = false;
+            TagNumber = tagNumber;
+            RawBytes = rawBytes.ToImmutableArray();
+            SubBlocks = ImmutableArray<BerTlvBlock>.Empty;
+        }
+
+        public BerTlvBlock(TagClass tagClass, long tagNumber, IEnumerable<BerTlvBlock> childBlocks)
+        {
+            Class = tagClass;
+            Constructed = true;
+            TagNumber = tagNumber;
+            RawBytes = ImmutableArray<byte>.Empty;
+            SubBlocks = childBlocks.ToImmutableArray();
         }
 
         public void Write(Stream stream)
@@ -55,6 +73,15 @@ namespace ZulassungsSharp
                 var bytes = new byte[RawBytes.Length];
                 RawBytes.CopyTo(bytes);
                 stream.Write(bytes, 0, bytes.Length);
+            }
+        }
+
+        public byte[] ToArray()
+        {
+            using (var memStream = new MemoryStream())
+            {
+                this.Write(memStream);
+                return memStream.ToArray();
             }
         }
 
