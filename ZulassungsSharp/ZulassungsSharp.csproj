@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="PCSC" Version="4.2.0" />
     <PackageReference Include="PCSC.Iso7816" Version="4.2.0" />
     <PackageReference Include="Portable.BouncyCastle" Version="1.8.5" />
